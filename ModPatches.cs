@@ -60,16 +60,21 @@ namespace BBElevatorsEverywhere.Patches
 				new CodeMatch(OpCodes.Brfalse_S, name: "IL_25BE")
 				*/
 				)
+			//.LogAll(count: 140)
 			.Advance(7)
-			.SetJumpTo(OpCodes.Brfalse_S, 3130, out _) // Should in theory, jump to the end of the for loop, making the second if inside the first
+			.GetPositionFromMatchForward(out int target, false, 
+			new CodeMatch(OpCodes.Ldloc_S, name:"V_92"),
+			new CodeMatch(OpCodes.Ldc_I4_1),
+			new CodeMatch(OpCodes.Add)
+			)
+			.SetJumpTo(OpCodes.Brfalse_S, target, out _) // Should in theory, jump to the end of the for loop, making the second if inside the first
 			// Field trip stuff
 			.MatchForward(false,
 			new CodeMatch(OpCodes.Ldloc_S, name: "V_105"),
 			new CodeMatch(CodeInstruction.LoadField(typeof(TileController), "room")),
 			new CodeMatch(CodeInstruction.LoadField(typeof(RoomController), "acceptsExits")))
 			.RemoveInstructions(4) // Removes one of the if conditions
-			// .Advance(-30) // Just used for debugging
-			//.LogAll(count: 65)
+			//.LogAll(count: 65, offset: -30)
 
 			.InstructionEnumeration();
 		
