@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using UnityEngine;
+using BBElevatorsEverywhere.Extensions;
 
 namespace BBElevatorsEverywhere.Patches
 {
@@ -62,9 +63,13 @@ namespace BBElevatorsEverywhere.Patches
 			.Advance(7)
 			.SetJumpTo(OpCodes.Brfalse_S, 3130, out _) // Should in theory, jump to the end of the for loop, making the second if inside the first
 			// Field trip stuff
-			.MatchForward(false, new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(LevelBuilder), "CreateTripEntrance")))
-			.Advance(-34) // Goes to an if block near it
+			.MatchForward(false,
+			new CodeMatch(OpCodes.Ldloc_S, name: "V_105"),
+			new CodeMatch(CodeInstruction.LoadField(typeof(TileController), "room")),
+			new CodeMatch(CodeInstruction.LoadField(typeof(RoomController), "acceptsExits")))
 			.RemoveInstructions(4) // Removes one of the if conditions
+			// .Advance(-30) // Just used for debugging
+			//.LogAll(count: 65)
 
 			.InstructionEnumeration();
 		
@@ -88,7 +93,7 @@ namespace BBElevatorsEverywhere.Patches
 		private static void Alltiles(ref TileController[] __result, EnvironmentController ___ec, List<RoomController> ___specialRooms)
 		{
 			List<TileController> tiles = ___ec.mainHall.GetNewTileList();
-			___specialRooms.ForEach(x => tiles.AddRange(x.GetNewTileList().Where(z => !___ec.GetTileNeighbors(z.position).All(s => s != null)))); // Basically only tiles that are next to any null tile
+			___specialRooms.ForEach(x => tiles.AddRange(x.GetNewTileList())); // Basically only tiles that are next to any null tile
 			__result = [.. tiles];
 		}
 	}
